@@ -7,8 +7,9 @@ import java.io.*;
 
 public class Assig4
 {
-	private ArrayList<String> solution;
-	private String [][] route;
+	private Stack<String> solution;
+	private boolean [][] beenThere;
+	private String [][] maze;
 
 	public static void main(String[] args) throws IOException
 	{
@@ -37,7 +38,7 @@ public class Assig4
 			int start_row = Integer.parseInt(line2.split(" ")[0]);
 			int start_col = Integer.parseInt(line2.split(" ")[1]);
 
-			String [][] maze = new String[rows][cols]; // String array to log maze
+			maze = new String[rows][cols]; // String array to log maze
 			
 			// Loop through the input maze
 			for (int i = 0; i < rows; i++)
@@ -55,35 +56,51 @@ public class Assig4
 
 			System.out.println("\nSearching for solutions starting at (" + start_row + ", " + start_col + "):\n");
 
-			route = new String[rows][cols]; // Create new array same size as maze to keep track of route
-			boolean done_searching = false;
-			while (!done_searching)
-			{
-				// Set the new route to the original maze
-				for (int i = 0; i < rows; i++)
-				{
-					for (int j = 0; j < cols; j++)
-					{
-						route[i][j] = maze[i][j];
-					}
-				}
+			beenThere = new String[rows][cols]; // Create new array same size as maze to keep track of route
 
-				solution = new ArrayList<Integer>();
-				boolean found_solution = doSearch(start_row, start_col);
+			// Set the new route to the original maze
+			for (int i = 0; i < rows; i++)
+			{
+				for (int j = 0; j < cols; j++)
+				{
+					beenThere[i][j] = false;
+				}
 			}
+
+			solution = new Stack<String>();
+
+			solution.push(new String("(" + start_row + ", " + start_col + ")"));
+			beenThere[start_row][start_col] = true;
+
+			doSearch(start_row, start_col);
 		}
 	}
 
-	public boolean doSearch(int x, int y)
+	public void doSearch(int x, int y)
 	{
-		if (route[x][y].equals("2"))
+		// If left is valid index
+		int left = x - 1;
+		if (left >= 0 && !beenThere[x - 1][y])
 		{
-			solution.add(new String("(" + x + ", " + y + ")"));
-			return true;
+			// Check left
+			String left_char = maze[left][y];
+			if (left_char.equals("2"))
+			{
+				solution.push(new String("(" + left + ", " + y + ")"));
+				printSolution();
+				solution.pop();
+			}
+			else if (left_char.equals("0"))
+			{
+				beenThere[left][y] = true;
+				solution.push(new String("(" + left + ", " + y + ")"));
+				doSearch(left, y);
+				beenThere[left][y] = false;
+				solution.pop();
+			}
 		}
-		else
-		{
-			
-		}
+
+		int top = y + 1;
+		
 	}
 }

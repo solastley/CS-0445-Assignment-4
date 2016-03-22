@@ -7,19 +7,19 @@ import java.io.*;
 
 public class Assig4
 {
-	private Stack<String> solution;
+	private ArrayList<String> solution;
 	private boolean [][] beenThere;
-	private String [][] maze;
+	private String [][] maze, short_solution;
+	private int num_solutions, rec_calls, shortest;
 
 	public static void main(String[] args) throws IOException
 	{
-		new Assig4();
+		String filename = args[0]; // Read filename from command line
+		new Assig4(filename);
 	}
 
-	public Assig4()
-	{
-		String filename = args[0]; // Read filename from command line
-				
+	public Assig4(String filename) throws IOException
+	{				
 		File inFile = new File(filename);
 		Scanner inScan = new Scanner(inFile); // Create scanner for file
 
@@ -27,6 +27,10 @@ public class Assig4
 		{
 			System.out.println("-------------------------\n");
 			System.out.println("The new board is:");
+
+			num_solutions = 0;
+			rec_calls = 0;
+			shortest = 0;
 
 			// Read in the first two numbers for the maze, number of rows and cols
 			String line1 = inScan.nextLine();
@@ -39,6 +43,7 @@ public class Assig4
 			int start_col = Integer.parseInt(line2.split(" ")[1]);
 
 			maze = new String[rows][cols]; // String array to log maze
+			short_solution = new String[rows][cols];
 			
 			// Loop through the input maze
 			for (int i = 0; i < rows; i++)
@@ -54,9 +59,9 @@ public class Assig4
 				System.out.println();
 			}
 
-			System.out.println("\nSearching for solutions starting at (" + start_row + ", " + start_col + "):\n");
+			System.out.println("Searching for solutions starting at (" + start_row + ", " + start_col + "):");
 
-			beenThere = new String[rows][cols]; // Create new array same size as maze to keep track of route
+			beenThere = new boolean[rows][cols]; // Create new array same size as maze to keep track of route
 
 			// Set the new route to the original maze
 			for (int i = 0; i < rows; i++)
@@ -67,40 +72,174 @@ public class Assig4
 				}
 			}
 
-			solution = new Stack<String>();
+			solution = new ArrayList<String>();
 
-			solution.push(new String("(" + start_row + ", " + start_col + ")"));
+			solution.add(new String("(" + start_row + ", " + start_col + ")"));
 			beenThere[start_row][start_col] = true;
 
 			doSearch(start_row, start_col);
+
+			System.out.println("\nThere were a total of " + num_solutions + " solutions found:");
+			System.out.println("A total of " + rec_calls + " recursive calls were made");
+			if (shortest > 0)
+			{
+				System.out.println("The shortest solution had " + shortest + " segments");
+				for (int i = 0; i < short_solution.length; i++)
+				{
+					for (int j = 0; j < short_solution[0].length; j++)
+					{
+						System.out.print(short_solution[i][j] + " ");
+					}
+					System.out.println();
+				}
+			}
 		}
 	}
 
 	public void doSearch(int x, int y)
 	{
+		rec_calls++; // Increment rec_calls each time a recursive call is made
+
 		// If left is valid index
 		int left = x - 1;
-		if (left >= 0 && !beenThere[x - 1][y])
+		if (left >= 0 && !beenThere[left][y])
 		{
 			// Check left
 			String left_char = maze[left][y];
 			if (left_char.equals("2"))
 			{
-				solution.push(new String("(" + left + ", " + y + ")"));
+				solution.add(new String("(" + left + ", " + y + ")"));
 				printSolution();
-				solution.pop();
+				solution.remove(solution.size() - 1);
 			}
 			else if (left_char.equals("0"))
 			{
 				beenThere[left][y] = true;
-				solution.push(new String("(" + left + ", " + y + ")"));
+				solution.add(new String("(" + left + ", " + y + ")"));
 				doSearch(left, y);
 				beenThere[left][y] = false;
-				solution.pop();
+				solution.remove(solution.size() - 1);
 			}
 		}
 
-		int top = y + 1;
-		
+		// If top is valid index
+		int top = y - 1;
+		if (top >= 0 && !beenThere[x][top])
+		{
+			// Check top
+			String top_char = maze[x][top];
+			if (top_char.equals("2"))
+			{
+				solution.add(new String("(" + x + ", " + top + ")"));
+				printSolution();
+				solution.remove(solution.size() - 1);
+			}
+			else if (top_char.equals("0"))
+			{
+				beenThere[x][top] = true;
+				solution.add(new String("(" + x + ", " + top + ")"));
+				doSearch(x, top);
+				beenThere[x][top] = false;
+				solution.remove(solution.size() - 1);
+			}
+		}
+
+		// If right is valid index
+		int right = x + 1;
+		if (right < maze.length && !beenThere[right][y])
+		{
+			// Check right
+			String right_char = maze[right][y];
+			if (right_char.equals("2"))
+			{
+				solution.add(new String("(" + right + ", " + y + ")"));
+				printSolution();
+				solution.remove(solution.size() - 1);
+			}
+			else if (right_char.equals("0"))
+			{
+				beenThere[right][y] = true;
+				solution.add(new String("(" + right + ", " + y + ")"));
+				doSearch(right, y);
+				beenThere[right][y] = false;
+				solution.remove(solution.size() - 1);
+			}
+		}
+
+		// If bottom is valid index
+		int bottom = y + 1;
+		if (bottom < maze[0].length && !beenThere[x][bottom])
+		{
+			// Check bottom
+			String bottom_char = maze[x][bottom];
+			if (bottom_char.equals("2"))
+			{
+				solution.add(new String("(" + x + ", " + bottom + ")"));
+				printSolution();
+				solution.remove(solution.size() - 1);
+			}
+			else if (bottom_char.equals("0"))
+			{
+				beenThere[x][bottom] = true;
+				solution.add(new String("(" + x + ", " + bottom + ")"));
+				doSearch(x, bottom);
+				beenThere[x][bottom] = false;
+				solution.remove(solution.size() - 1);
+			}
+		}
+	}
+
+	public void printSolution()
+	{
+		num_solutions++;
+
+		System.out.println("\nSolution found with " + solution.size() + " segments");
+
+		String [][] map = new String[maze.length][maze[0].length];
+		for (int i = 0; i < maze.length; i++)
+		{
+			for (int j = 0; j < maze[0].length; j++)
+			{
+				map[i][j] = maze[i][j];
+			}
+		}
+
+		for (int i = 0; i < solution.size() - 1; i++)
+		{
+			String coord = solution.get(i);
+			coord = coord.substring(1, coord.length() - 1);
+			String [] val_array = coord.split(", ");
+			int x = Integer.parseInt(val_array[0]);
+			int y = Integer.parseInt(val_array[1]);
+			map[x][y] = "x";
+		}
+
+		if (shortest == 0 || solution.size() < shortest)
+		{
+			shortest = solution.size();
+			for (int i = 0; i < map.length; i++)
+			{
+				for (int j = 0; j < map[0].length; j++)
+				{
+					short_solution[i][j] = map[i][j];
+				}
+			}
+		}
+
+		for (int i = 0; i < maze.length; i++)
+		{
+			for (int j = 0; j < maze[0].length; j++)
+			{
+				System.out.print(map[i][j] + " ");
+			}
+			System.out.println();
+		}
+
+		System.out.print("Path: ");
+		for (int i = 0; i < solution.size(); i++)
+		{
+			System.out.print(solution.get(i) + " ");
+		}
+		System.out.println();
 	}
 }

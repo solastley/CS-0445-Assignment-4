@@ -4,13 +4,24 @@
 
 import java.util.*;
 import java.io.*;
+import java.lang.*;
+import java.math.*;
 
 public class Assig4
 {
-	private ArrayList<String> solution;
+	// Two ArrayLists of strings. One to keep track of current solution and one
+	// to keep track of the shortest solution
+	private ArrayList<String> solution, short_array;
+	// A map of boolean values to keep track of whether or not a location has
+	// been visited already while looking for solutions
 	private boolean [][] beenThere;
+	// Two maps of string values to visibly keep track of the current solution
+	// and the shortest solution
 	private String [][] maze, short_solution;
-	private int num_solutions, rec_calls, shortest;
+	// Instance variables to keep track of total number of solutions, recursive calls,
+	// and the shortest number of solutions
+	private int num_solutions, shortest;
+	private double rec_calls;
 
 	public static void main(String[] args) throws IOException
 	{
@@ -61,7 +72,8 @@ public class Assig4
 
 			System.out.println("Searching for solutions starting at (" + start_row + ", " + start_col + "):");
 
-			beenThere = new boolean[rows][cols]; // Create new array same size as maze to keep track of route
+			beenThere = new boolean[rows][cols]; // Create new array same size as maze to keep track of
+												// already visited locations
 
 			// Set the new route to the original maze
 			for (int i = 0; i < rows; i++)
@@ -72,15 +84,20 @@ public class Assig4
 				}
 			}
 
+			// Initialize the two ArrayLists
 			solution = new ArrayList<String>();
+			short_array = new ArrayList<String>();
 
+			// The 
 			solution.add(new String("(" + start_row + ", " + start_col + ")"));
 			beenThere[start_row][start_col] = true;
 
 			doSearch(start_row, start_col);
 
 			System.out.println("\nThere were a total of " + num_solutions + " solutions found:");
-			System.out.println("A total of " + rec_calls + " recursive calls were made");
+			System.out.print("A total of ");
+			System.out.format("%.0f", rec_calls);
+			System.out.println(" recursive calls were made");
 			if (shortest > 0)
 			{
 				System.out.println("The shortest solution had " + shortest + " segments");
@@ -92,13 +109,19 @@ public class Assig4
 					}
 					System.out.println();
 				}
+				System.out.print("Path: ");
+				for (int i = 0; i < short_array.size(); i++)
+				{
+					System.out.print(short_array.get(i) + " ");
+				}
+				System.out.println();
 			}
 		}
 	}
 
 	public void doSearch(int x, int y)
 	{
-		rec_calls++; // Increment rec_calls each time a recursive call is made
+		rec_calls = rec_calls + 1; // Increment rec_calls each time a recursive call is made
 
 		// If left is valid index
 		int left = x - 1;
@@ -223,6 +246,11 @@ public class Assig4
 				{
 					short_solution[i][j] = map[i][j];
 				}
+			}
+			short_array.clear();
+			for (int i = 0; i < solution.size(); i++)
+			{
+				short_array.add(solution.get(i));
 			}
 		}
 
